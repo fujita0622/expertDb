@@ -1,0 +1,20 @@
+演習問題
+1-1
+現在使っているデータベースのDBMSについて以下の情報を確認してください。
+① 使用しているDBMSのバージョン/そのDBMSの最新バージョン
+② エディション
+③ マニュアルの所在
+
+①
+[使用しているDBMSのバージョン]
+psql (PostgreSQL) 10.3
+
+[DBMSの最新バージョン]
+最新バージョンを使用しているので上記と同上
+
+②
+エディションなし
+
+③
+https://www.postgresql.org/docs/manuals/
+https://www.postgresql.jp/document/
