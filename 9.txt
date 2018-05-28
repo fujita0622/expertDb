@@ -1,0 +1,52 @@
+9-1 本章では、木構造を扱う4つのモデルが登場しました。
+・隣接リストモデル
+組織図{社員,上司}
+
+・入れ子集合モデル
+組織図{社員,左端,右端}
+
+・入れ子区間モデル
+組織図{社員,左端,右端}
+
+・入れ子区間モデル
+組織図{社員,経路}
+
+これらの正規形の次数は、それぞれいくつか答えてください。
+
+9-2 入れ子区間モデルの「左端」および「右端」の列を実装するためのデータ型を、以下のDBMSの最新バージョンについて調べなさい。
+・Oracle
+・SQLServer
+・DB2
+・PostgreSQL
+・MySQL
+
+
+[9-1.回答]
+・隣接リストモデル
+正規化されていない
+
+・入れ子集合モデル
+第3正規形
+
+・入れ子区間モデル
+第3正規形
+
+・入れ子区間モデル
+第3正規形
+
+
+[9-2.回答]
+・Oracle Version 11.1
+BINARY_FLOAT/BINARY_DOUBLE
+
+・SQLServer 2017
+real/float
+
+・DB2 11.1
+REAL/DOUBLE/FLOAT/DECIMAL/NUMERIC/DECFLOAT
+
+・PostgreSQL 10.3
+decimal/numeric/real/double precision
+
+・MySQL 5.7.22
+FLOAT/DOUBLE
