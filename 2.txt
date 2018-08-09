@@ -24,12 +24,20 @@
 
 
 [2-2.回答]
-windows:typeperf,tasklist
-mac:top,vm_stat,lsof
-linux:vmstat,top,sar,mpstat,free,iostat
+windows:
+CPU:systeminfo
+メモリ:systeminfo
+
+mac:
+CPU:system_profiler SPHardwareDataType
+メモリ:system_profiler SPHardwareDataType
+
+linux: 
+CPU:cat /proc/cpuinfo
+メモリ:cat /proc/meminfo
 
 
 [2-3.回答]
-1. アクセスログを確認し、ピーク時間帯を割り出す。
+1. アクセスログを確認し、時間帯を割り出す。
 2. アクセスログで割り出したピーク時間帯のCPU/メモリ/ディスクの使用量をリソースログで確認
 3. リソースログで確認した各種リソース使用量を元に増強するサーバーのサイジングを行う
