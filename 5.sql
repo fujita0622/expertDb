@@ -63,34 +63,33 @@ C4/日用品
 [SQL文1]
 -- 取得列
 -- 商品テーブルのp_c_code列の値ごとの集計値
--- 商品分類テーブルのclassification_name列
+-- 商品分類テーブルのp_c_name列
 SELECT 
-  COUNT(p.p_c_code) AS 商品分類ごとの商品数,
-  pc.classification_name AS 分類名
+  COUNT(product.p_c_code) AS 商品分類ごとの商品数,
+  p_classification.p_c_name AS 分類名
 -- 商品テーブル(product)を商品分類テーブル(p_classification)と内部結合
-FROM 
-  product AS p
-INNER JOIN
-  p_classification AS pc
+FROM
+  product
+LEFT JOIN
+  p_classification
 -- 結合条件
 -- 商品テーブル(product)のp_c_code列と商品分類テーブル(p_classification)のp_c_code列
 ON
-  pc.p_c_code = p.p_c_code
--- 商品テーブル(product)のp_c_code列をグループ化
+  product.p_c_code = p_classification.p_c_code
 GROUP BY
-  p.p_c_code
+  -- グループ化する列
+  -- 商品分類テーブル(p_classification)のp_c_name列をグループ化
+  p_classification.p_c_name
 ;
 
 [出力結果]
-+--------------------------------+--------------+
-| 商品分類ごとの商品数           | 分類名       |
-+--------------------------------+--------------+
-|                              4 | 水洗用品     |
-|                              2 | 食器         |
-|                              1 | 書籍         |
-|                              1 | 日用雑貨     |
-+--------------------------------+--------------+
-
+ 商品分類ごとの商品数 |  分類名  
+----------------------+----------
+                    2 | 食器
+                    1 | 書籍
+                    4 | 水洗用品
+                    1 | 日用品
+(4 rows)
 
 [SQL文2]
 -- 取得列
@@ -103,18 +102,18 @@ SELECT
   p.p_name
 -- 対象テーブル
 FROM
-  (
     (
 -- サブクエリ(最下層)
 -- 支店商品(b_shop_product)テーブルを支社テーブル(b_office)と内部結合
 -- 結合条件
 -- 支社テーブルのo_code列と支店商品テーブルの o_code列
+    SELECT 
       b_shop_product AS bsp
     INNER JOIN 
       b_office AS o
     ON
       o.o_code = bsp.o_code
-    )
+    ) AS b_shop_product
 -- サブクエリ
 -- 支店商品(b_shop_product)テーブルを支店テーブル(b_shop)と内部結合
 -- 結合条件(両方一致)
