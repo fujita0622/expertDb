@@ -29,8 +29,8 @@ CPU:systeminfo
 メモリ:systeminfo
 
 mac:
-CPU:top
-メモリ:top,vm_stat
+CPU:system_profiler SPHardwareDataType
+メモリ:system_profiler SPHardwareDataType
 
 linux: 
 CPU:cat proc/cpuinfo
