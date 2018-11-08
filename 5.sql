@@ -151,25 +151,31 @@ FROM
 
 
 [SQL文3]
--- 支店商品テーブルから
--- s_code列、(o_code, s_code)の集計値を取得
-SELECT 
+SELECT
+  -- 取得列
   s_code AS 支店コード,
   p_count AS 商品数
 FROM
-  (SELECT o_code, s_code, COUNT(*) AS p_count FROM b_shop_product GROUP BY o_code,s_code) AS b_shop_product
-HAVING 
-  p_count = MAX(p_count)
-GROUP BY p_count
-;
+-- サブクエリ
+-- 支店商品テーブルから
+-- 支社コード,支店コード,支店別の商品数 を取得
+  (SELECT o_code, s_code, COUNT(p_code) AS p_count FROM b_shop_product GROUP BY o_code,s_code) AS count_shop_product
+WHERE 
+  -- 取得条件
+  -- 商品数の最大値
+  p_count = (SELECT MAX(p_count)
+    FROM
+-- サブクエリ
+-- 支店商品テーブルから
+-- 支店別の商品数 を取得
+    (SELECT COUNT(p_code) AS p_count FROM b_shop_product GROUP BY o_code,s_code) AS count_s_product_only);
 
 
 [出力結果]
-+-----------------+-----------+
-| 支店コード      | 商品数    |
-+-----------------+-----------+
-|              02 |         5 |
-+-----------------+-----------+
+ 支店コード | 商品数 
+------------+--------
+ 02         |      5
+(1 row)
 
 
 [5-2.回答]
