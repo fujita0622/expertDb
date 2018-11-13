@@ -27,7 +27,7 @@ BETWEENなどの範囲検索には利用できない
 
 [6-2.回答]
 ◆MySQL
-OPTIMIZE TABLE テーブル名
+ALTER TABLE テーブル名 ADD INDEX インデックス名(カラム名);
 
 ◆postgreSQL
 REINDEX INDEX インデックス名
