@@ -63,130 +63,239 @@ C4/日用品
 [SQL文1]
 -- 取得列
 -- 商品テーブルのp_c_code列の値ごとの集計値
--- 商品分類テーブルのclassification_name列
+-- 分類名
 SELECT 
-  COUNT(p.p_c_code) AS 商品分類ごとの商品数,
-  pc.classification_name AS 分類名
+  COUNT(product.p_c_code) AS 商品分類ごとの商品数,
+  p_classification.p_c_name AS 分類名
 -- 商品テーブル(product)を商品分類テーブル(p_classification)と内部結合
-FROM 
-  product AS p
-INNER JOIN
-  p_classification AS pc
+FROM
+  product
+LEFT JOIN
+  p_classification
 -- 結合条件
 -- 商品テーブル(product)のp_c_code列と商品分類テーブル(p_classification)のp_c_code列
 ON
-  pc.p_c_code = p.p_c_code
--- 商品テーブル(product)のp_c_code列をグループ化
+  product.p_c_code = p_classification.p_c_code
 GROUP BY
-  p.p_c_code
+  -- グループ化する列
+  -- 商品分類テーブル(p_classification)のp_c_name列をグループ化
+  p_classification.p_c_name
 ;
 
 [出力結果]
-+--------------------------------+--------------+
-| 商品分類ごとの商品数           | 分類名       |
-+--------------------------------+--------------+
-|                              4 | 水洗用品     |
-|                              2 | 食器         |
-|                              1 | 書籍         |
-|                              1 | 日用雑貨     |
-+--------------------------------+--------------+
-
+ 商品分類ごとの商品数 |  分類名  
+----------------------+----------
+                    2 | 食器
+                    1 | 書籍
+                    4 | 水洗用品
+                    1 | 日用品
+(4 rows)
 
 [SQL文2]
--- 取得列
--- 支社テーブル 支社名(o_name)列
--- 支店テーブル 支店名(s_name)列
--- 商品テーブル 支社名(p_name)列
-SELECT 
-  o.o_name,
-  s.s_name,
-  p.p_name
--- 対象テーブル
+SELECT
+  -- 取得列
+  o_name AS 支社名,
+  s_name AS 支店名,
+  p_name AS 商品名
 FROM
-  (
-    (
--- サブクエリ(最下層)
--- 支店商品(b_shop_product)テーブルを支社テーブル(b_office)と内部結合
--- 結合条件
--- 支社テーブルのo_code列と支店商品テーブルの o_code列
-      b_shop_product AS bsp
-    INNER JOIN 
-      b_office AS o
+  -- サブクエリ
+  (SELECT 
+    b_shop_product.o_code, -- 支店商品.支社コード
+    b_shop_product.s_code, -- 支店商品.支店コード
+    b_shop_product.p_code, -- 支店商品.商品コード
+    b_office.o_name -- 支社.支社名
+  -- 支店商品テーブルに支社テーブルを内部結合
+  FROM
+      b_shop_product -- 支店商品テーブル
+    INNER JOIN
+      b_office -- 支社テーブル
     ON
-      o.o_code = bsp.o_code
-    )
--- サブクエリ
--- 支店商品(b_shop_product)テーブルを支店テーブル(b_shop)と内部結合
--- 結合条件(両方一致)
--- 支店テーブルの o_code列と支店商品テーブルの o_code列
--- 支店テーブルの s_code列と支店商品テーブルの s_code列
-  INNER JOIN 
-    b_shop AS s
-  ON
-    s.o_code = bsp.o_code
-  AND
-    s.s_code = bsp.s_code
-  )
--- 支店商品(b_shop_product)テーブルを商品テーブル(product)と内部結合
--- 結合条件
--- 商品テーブルの p_code列と支店商品テーブルの p_code列
+    -- 結合条件
+    -- 支社テーブルのo_code列と支店商品テーブルの o_code列
+      b_office.o_code = b_shop_product.o_code
+    ) AS o_shop_product -- 支社/支店商品テーブル
+  -- 支社/支店商品テーブルに支店テーブルを内部結合
   INNER JOIN
-    product AS p
-  ON 
-    p.p_code = bsp.p_code
+    b_shop -- 支店テーブル
+  ON
+    -- 結合条件
+    -- 支店テーブルのo_code列と支社/支店商品テーブルの o_code列 かつ
+    -- 支店テーブルのs_code列と支社/支店商品テーブルの s_code列
+    b_shop.o_code = o_shop_product.o_code
+  AND
+    b_shop.s_code = o_shop_product.s_code
+  INNER JOIN
+  -- 商品/支店商品テーブルに支店テーブルを内部結合
+    product -- 商品テーブル
+  ON
+    -- 結合条件
+    -- 商品テーブルのp_code列と支社/支店商品テーブルの p_code列 かつ
+    product.p_code = o_shop_product.p_code
 ;
 
 [出力結果]
-+--------+-----------+--------------+
-| o_name | s_name    | p_name       |
-+--------+-----------+--------------+
-| 東京   | 渋谷      | 石鹸         |
-| 東京   | 渋谷      | タオル       |
-| 東京   | 渋谷      | 歯ブラシ     |
-| 東京   | 八重洲    | タオル       |
-| 東京   | 八重洲    | 歯ブラシ     |
-| 東京   | 八重洲    | コップ       |
-| 東京   | 八重洲    | 箸           |
-| 東京   | 八重洲    | スプーン     |
-| 大阪   | 堺        | 石鹸         |
-| 大阪   | 堺        | タオル       |
-| 大阪   | 豊中      | 雑誌         |
-| 大阪   | 豊中      | 爪切り       |
-+--------+-----------+--------------+
-
+ 支社名 | 支店名 |  商品名  
+--------+--------+----------
+ 東京   | 渋谷   | 石鹸
+ 東京   | 渋谷   | タオル
+ 東京   | 渋谷   | ハブラシ
+ 東京   | 八重洲 | タオル
+ 東京   | 八重洲 | ハブラシ
+ 東京   | 八重洲 | コップ
+ 東京   | 八重洲 | 箸
+ 東京   | 八重洲 | スプーン
+ 大阪   | 堺     | 石鹸
+ 大阪   | 堺     | タオル
+ 大阪   | 豊中   | 雑誌
+ 大阪   | 豊中   | 爪切り
+(12 rows)
 
 [SQL文3]
--- 支店商品テーブルから
--- s_code列、(o_code, s_code)の集計値を取得
-SELECT 
+SELECT
+  -- 取得列
   s_code AS 支店コード,
-  COUNT(*) AS 商品数
+  p_count AS 商品数
 FROM
-  b_shop_product
--- o_code, s_code列をグループ化
-GROUP BY 
-  o_code, s_code
--- (o_code, s_code)の集計値の値が多い順
-ORDER BY 
-  COUNT(*) DESC
--- 集計値の最大値だけ取得したいので1レコードだけ取りだす制約をLIMIT句で行う
-LIMIT 0, 1
-;
+-- サブクエリ
+-- 支店商品テーブルから
+-- 支社コード,支店コード,支店別の商品数 を取得
+  (SELECT o_code, s_code, COUNT(p_code) AS p_count FROM b_shop_product GROUP BY o_code,s_code) AS count_shop_product
+WHERE 
+  -- 取得条件
+  -- 商品数の最大値
+  p_count = (SELECT MAX(p_count)
+    FROM
+-- サブクエリ
+-- 支店商品テーブルから
+-- 支店別の商品数 を取得
+    (SELECT COUNT(p_code) AS p_count FROM b_shop_product GROUP BY o_code,s_code) AS count_s_product_only);
+
 
 [出力結果]
-+-----------------+-----------+
-| 支店コード      | 商品数    |
-+-----------------+-----------+
-|              02 |         5 |
-+-----------------+-----------+
+ 支店コード | 商品数 
+------------+--------
+ 02         |      5
+(1 row)
 
 
 [5-2.回答]
 [SQL文1]
+●非正規化方法
 商品分類テーブルに商品数の合計値を入れる「商品数」列を追加し、内部結合せずに商品分類テーブルで完結するテーブル構造に変更する。
 
+●非正規化後のテーブル
+ p_c_code | p_c_name | p_c_count 
+----------+----------+-----------
+ C1       | 水洗用品 | 4   
+ C2       | 食器     | 2   
+ C3       | 書籍     | 1   
+ C4       | 日用品   | 1   
+(4 rows)
+
+●非正規化後取得SQL
+SELECT
+  p_c_count AS 商品分類ごとの商品数,
+  p_c_name AS 分類名
+FROM
+  p_classification_non1
+;
+
+●非正規化後取得結果
+ 商品分類ごとの商品数 |  分類名  
+----------------------+----------
+ 4                    | 水洗用品
+ 2                    | 食器
+ 1                    | 書籍
+ 1                    | 日用品
+ (4 rows)
+
+●測定結果比較
+非正規化前:Time: 27.066 ms
+非正規化後:Time: 0.530 ms
+
+
 [SQL文2]
+●非正規化方法
 支店商品テーブルの各コードと関連する名の列を追加すれば4表を内部結合することなく支店商品テーブルだけで完結するテーブル構造に変更する。
 
+●非正規化後のテーブル
+ o_code | o_name | s_code | s_name | p_code |  p_name  
+--------+--------+--------+--------+--------+----------
+ 001    | 東京   | 01     | 渋谷   | 001    | 石鹸
+ 001    | 東京   | 01     | 渋谷   | 002    | タオル
+ 001    | 東京   | 01     | 渋谷   | 003    | ハブラシ
+ 001    | 東京   | 02     | 八重洲 | 002    | タオル
+ 001    | 東京   | 02     | 八重洲 | 003    | ハブラシ
+ 001    | 東京   | 02     | 八重洲 | 004    | コップ
+ 001    | 東京   | 02     | 八重洲 | 005    | 箸
+ 001    | 東京   | 02     | 八重洲 | 006    | スプーン
+ 002    | 大阪   | 01     | 堺     | 001    | 石鹸
+ 002    | 大阪   | 01     | 堺     | 002    | タオル
+ 002    | 大阪   | 02     | 豊中   | 007    | 雑誌
+ 002    | 大阪   | 02     | 豊中   | 008    | 爪切り
+(12 rows)
+
+●非正規化後取得SQL
+SELECT
+  o_name AS 支社名,
+  s_name AS 支店名,
+  p_name AS 商品名
+FROM
+  b_shop_product_non2
+;
+
+●非正規化後取得結果
+ 支社名 | 支店名 |  商品名  
+--------+--------+----------
+ 東京   | 渋谷   | 石鹸
+ 東京   | 渋谷   | タオル
+ 東京   | 渋谷   | ハブラシ
+ 東京   | 八重洲 | タオル
+ 東京   | 八重洲 | ハブラシ
+ 東京   | 八重洲 | コップ
+ 東京   | 八重洲 | 箸
+ 東京   | 八重洲 | スプーン
+ 大阪   | 堺     | 石鹸
+ 大阪   | 堺     | タオル
+ 大阪   | 豊中   | 雑誌
+ 大阪   | 豊中   | 爪切り
+(12 rows)
+
+●測定結果比較
+非正規化前:Time: 28.530 ms
+非正規化後:Time: 0.548 ms
+
+
 [SQL文3]
-本章で学んだ非正規化を行う箇所がありません。
+●非正規化方法
+支店テーブルに書く支店の取り扱い商品数のカラムを追加しサブクエリの使用回数を減らす。
+
+●非正規化後のテーブル
+ o_code | s_code | s_name | s_product_items 
+--------+--------+--------+-----------------
+ 001    | 01     | 渋谷   | 2   
+ 001    | 02     | 八重洲 | 5   
+ 002    | 01     | 堺     | 2   
+ 002    | 02     | 豊中   | 3   
+(4 rows)
+
+●非正規化後取得SQL
+SELECT 
+  s_code AS 支店コード,
+  s_product_items AS 商品数
+FROM 
+  b_shop_non3
+-- 取得条件
+-- 最も多い商品数
+WHERE
+  s_product_items = (SELECT MAX(s_product_items) FROM b_shop_non3);
+
+●非正規化後取得結果
+ 支店コード | 商品数 
+------------+--------
+ 02         | 5   
+(1 row)
+
+●測定結果比較
+非正規化前:Time: 6.175 ms
+非正規化後:Time: 0.856 ms
